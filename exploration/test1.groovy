@@ -70,4 +70,21 @@ def extract2(page, field) {
 def processContactDetails(page) {
   // The contact details section is slightly more complex. It consists of a header block of generic contact information
   // Followed by a repeating block for each activity or service which includes address, date/time etc
+  def contact_info = page.depthFirst().findAll{ it.text() =~  ".*Contact Details.*" }
+  if ( ( contact_info != null ) && ( contact_info.size() > 0 ) ) {
+    def contact_info_node = contact_info[0];
+    def contact_tr = contact_info_node.'..'.'..'.'..'
+    def font_elements = contact_tr.depthFirst().findAll { it.name = 'FONT' }
+    // Extract all the strings....
+    def contact_strings = []
+    font_elements.each {
+      // def this_str = it.'**'.text()
+      def this_str = it.text()
+      if ( this_str.length() > 0 ) {
+        contact_strings.add(this_str)
+        println "Got str ${this_str}"
+      }
+    }
+    
+  }
 }
