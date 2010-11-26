@@ -15,23 +15,59 @@ def readRecord(id) {
   // def response_text = base_url.toURL().text
   // def response_xml = new XmlSlurper().parseText(response_text)
 
-  def org_name = extract(response_page,'Organisation Name')
-  println "org name ${org_name}"
+  def org_name = extract2(response_page, 'Organisation Name')
+  def alt_name = extract2(response_page, 'Alternative Name')
+  def description = extract2(response_page, 'Description')
+  def url = extract2(response_page, 'Local Website')
+  def languages = extract2(response_page, 'Community Languages')
+  def publications = extract2(response_page, 'Publications')
+  def charity_no = extract2(response_page, 'Charity Number')
 
-  extract2(response_page, 'Organisation Name')
+  processContactDetails(response_page);
+
+  println "Name: \"${org_name}\""
+  println "Description: \"${description}\""
+  println "URL: \"${url}\""
+  println "Languages: \"${languages}\""
+  println "Publications: \"${publications}\""
+  println "Charity Number: \"${charity_no}\""
 
   result
 }
 
-def extract(page,field) {
-  def target_rows = page.html.body.'**'.td.find{it.text() =~ ".*${field}.*" }
-  println "rows: ${target_rows}"
-  "hello"
+/**
+ *   This is a very rough and ready util to scrape data when presented in a table of name-value pairs...
+ *   It's slight sophistocation is that it can dig into arbitrary elements on both sides to identify the field and the value
+ */
+def extract2(page, field) {
+  println "Looking for ${field}"
+
+  def result = ""
+  def target_rows = page.depthFirst().findAll{ it.text() =~  ".*${field}.*" }
+  // println "rows: ${target_rows}"
+  target_rows.each {
+    // Try to find a parent tr so we can navigate down to the content of td[1] - IE the real data
+    def elem = it
+    while ( ( elem != null ) && ( elem.name() != 'TR' ) ) {
+      elem = elem.parent()
+      // println "Testing ${elem.name()}"
+    }
+
+    if ( elem != null ) {
+      // println "Processing ${elem.'**'.text()}"
+      // println "Found parent.. Hopefully content = ${elem.text()}"
+      if ( result.length() > 0 )
+        result += " "
+      result += "${elem.TD[1].'**'.text()}"
+    }
+    else {
+      println "didn't find parent"
+    }
+  }
+  result
 }
 
-def extract2(page, field) {
-  // def target_rows = page.depthFirst().findAll{ it.td.text() =~  ".*${field}.*" }
-  // def target_rows = page.depthFirst().findAll{ true }
-  def target_rows = page.depthFirst().findAll{ it.text() =~  ".*${field}.*" }
-  println "rows: ${target_rows}"
+def processContactDetails(page) {
+  // The contact details section is slightly more complex. It consists of a header block of generic contact information
+  // Followed by a repeating block for each activity or service which includes address, date/time etc
 }
