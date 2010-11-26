@@ -74,11 +74,17 @@ def processContactDetails(page) {
   if ( ( contact_info != null ) && ( contact_info.size() > 0 ) ) {
     def contact_info_node = contact_info[0];
     def contact_tr = contact_info_node.'..'.'..'.'..'
-    def font_elements = contact_tr.depthFirst().findAll { it.name = 'FONT' }
+    def font_elements = contact_tr.depthFirst().findAll { it.name() == 'FONT' }
     // Extract all the strings....
     def contact_strings = []
     font_elements.each {
       // def this_str = it.'**'.text()
+
+      if ( ( it.B != null ) && ( it.B.text().length() > 0 ) ) {
+        println "Slipping in a heading ${it.B.text()}"
+        contact_strings.add(it.B.text())
+      }
+
       def this_str = it.text()
       if ( this_str.length() > 0 ) {
         contact_strings.add(this_str)
@@ -86,5 +92,20 @@ def processContactDetails(page) {
       }
     }
     
+    // Now process the data we've extracted...
+    // It goes like this
+    //  - "Contact Details"
+    //  - "Address"
+    //  - Everyting now until we encounter " (Please click on the ..." Is the first address.. Sort out the 5line stuff later :(
+    //  - "Disabled Access Details:" [May be missing]
+    //  - Now we start with repeating sections...
+    //      - "Contact Name"
+    //      - The names of any contacts
+    //      - "Telephone 1"
+    //      - Telephone 
+    //      - "Fax"+
+    //      - "Email"+
+    //      - "Service/Activity Details"
+    // Repeat the group
   }
 }
