@@ -3,6 +3,7 @@
     @Grab(group='xerces', module='xercesImpl', version='2.9.1') ])
 
 // Read test reading www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=16442
+// Other goog test records: http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=23786
 result = readRecord(16442)
 
 
@@ -92,6 +93,23 @@ def processContactDetails(page) {
       }
     }
     
+    def parse_config = [
+                         "ContactDetails":["ContactDetails",""],
+                         "Address:":["Address",""],
+                         "Disabled Access Details:":["DisabledAccess",""],
+                         "Contact Name:":["ContactName",""],
+                         "Telephone 1:":["Telephone",""],
+                         "Fax:":["Fax",""],
+                         "Email:":["Email",""],
+                         "Service/Activity Details:":["","newsvc"]
+                       ]
+
+    contact_strings.each {
+      if ( parse_config[it] != null ) {
+        println "config ${parse_config[it]}"
+      }
+    }
+
     // Now process the data we've extracted...
     // It goes like this
     //  - "Contact Details"
