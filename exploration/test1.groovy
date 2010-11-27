@@ -4,7 +4,8 @@
 
 // Read test reading www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=16442
 // Other goog test records: http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=23786
-result = readRecord(16442)
+// result = readRecord(16442)
+result = readRecord(23786)
 
 
 def readRecord(id) {
@@ -106,9 +107,16 @@ def processContactDetails(page) {
 
     contact_strings.each {
       if ( parse_config[it] != null ) {
-        println "config ${parse_config[it]}"
+        println "config ${it} ${parse_config[it]}"
+      }
+      else {
+        println "${it}"
       }
     }
+
+    // Now... there is a table for each Service/Activity Details record...
+    def service_details = page.depthFirst().findAll{ it.text() ==  "Service/Activity Details" }
+    println "Found ${service_details}"
 
     // Now process the data we've extracted...
     // It goes like this
