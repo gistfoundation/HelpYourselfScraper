@@ -118,6 +118,25 @@ def processContactDetails(page) {
     def service_details = page.depthFirst().findAll{ it.text() ==  "Service/Activity Details" }
     println "Found ${service_details}"
 
+    service_details.each {
+      def sd_table = it.'..'.'..'.'..'.'..'.'..'
+      println "\n\ntable element: ${sd_table.name()}"
+      def sd_font_elements = sd_table.depthFirst().findAll { it.name() == 'FONT' }
+      // Extract all the strings....
+      sd_font_elements.each {
+        if ( ( it.B != null ) && ( it.B.text().length() > 0 ) ) {
+          println "Slipping in a heading ${it.B.text()}"
+          // contact_strings.add(it.B.text())
+        }
+
+        def this_str = it.text()
+        if ( this_str.length() > 0 ) {
+          // contact_strings.add(this_str)
+          println "Got str ${this_str}"
+        }
+      }
+    }
+
     // Now process the data we've extracted...
     // It goes like this
     //  - "Contact Details"
