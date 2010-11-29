@@ -17,22 +17,17 @@ def readRecord(id) {
   // def response_text = base_url.toURL().text
   // def response_xml = new XmlSlurper().parseText(response_text)
 
-  def org_name = extract2(response_page, 'Organisation Name')
-  def alt_name = extract2(response_page, 'Alternative Name')
-  def description = extract2(response_page, 'Description')
-  def url = extract2(response_page, 'Local Website')
-  def languages = extract2(response_page, 'Community Languages')
-  def publications = extract2(response_page, 'Publications')
-  def charity_no = extract2(response_page, 'Charity Number')
+  addProperty(result,"OrgName", extract2(response_page, 'Organisation Name'))
+  addProperty(result,"AltName", extract2(response_page, 'Alternative Name'))
+  addProperty(result,"Desc", extract2(response_page, 'Description'))
+  addProperty(result,"Website", extract2(response_page, 'Local Website'))
+  addProperty(result,"Langs", extract2(response_page, 'Community Languages'))
+  addProperty(result,"Pubs", extract2(response_page, 'Publications'))
+  addProperty(result,"CharityNo", extract2(response_page, 'Charity Number'))
 
-  processContactDetails(response_page);
+  processContactDetails(response_page, result);
 
-  println "Name: \"${org_name}\""
-  println "Description: \"${description}\""
-  println "URL: \"${url}\""
-  println "Languages: \"${languages}\""
-  println "Publications: \"${publications}\""
-  println "Charity Number: \"${charity_no}\""
+  println "${result}"
 
   result
 }
@@ -69,7 +64,7 @@ def extract2(page, field) {
   result
 }
 
-def processContactDetails(page) {
+def processContactDetails(page, result) {
   // The contact details section is slightly more complex. It consists of a header block of generic contact information
   // Followed by a repeating block for each activity or service which includes address, date/time etc
   def contact_info = page.depthFirst().findAll{ it.text() =~  ".*Contact Details.*" }
@@ -100,23 +95,28 @@ def processContactDetails(page) {
                          "Disabled Access Details:":["DisabledAccess",""],
                          "Contact Name:":["ContactName",""],
                          "Telephone 1:":["Telephone",""],
+                         "Telephone 2:":["Telephone",""],
                          "Fax:":["Fax",""],
                          "Email:":["Email",""],
-                         "Service/Activity Details:":["","newsvc"]
+                         "Service/Activity Details:":["ServiceDetails"],
+                         " (Please click on the postcode link to view location on Multimap)":["postcode"],
+                         "Further Access Details:":["DisabledAccess"]
                        ]
 
+    def field = "none"
     contact_strings.each {
       if ( parse_config[it] != null ) {
         println "config ${it} ${parse_config[it]}"
+        field = parse_config[it][0];
       }
       else {
-        println "${it}"
+        addProperty(result,field,it)
+        // println "${field}=${it}"
       }
     }
 
-    // Now... there is a table for each Service/Activity Details record...
     def service_details = page.depthFirst().findAll{ it.text() ==  "Service/Activity Details" }
-    println "Found ${service_details}"
+    // println "Found ${service_details}"
 
     service_details.each {
       def sd_table = it.'..'.'..'.'..'.'..'.'..'
@@ -136,21 +136,15 @@ def processContactDetails(page) {
         }
       }
     }
+  }
+}
 
-    // Now process the data we've extracted...
-    // It goes like this
-    //  - "Contact Details"
-    //  - "Address"
-    //  - Everyting now until we encounter " (Please click on the ..." Is the first address.. Sort out the 5line stuff later :(
-    //  - "Disabled Access Details:" [May be missing]
-    //  - Now we start with repeating sections...
-    //      - "Contact Name"
-    //      - The names of any contacts
-    //      - "Telephone 1"
-    //      - Telephone 
-    //      - "Fax"+
-    //      - "Email"+
-    //      - "Service/Activity Details"
-    // Repeat the group
+def addProperty(mapobj, name, value) {
+  def value_array = mapobj[name]
+  if ( value_array != null ) {
+    value_array.add(value)
+  }
+  else {
+    mapobj[name] = [value]
   }
 }
