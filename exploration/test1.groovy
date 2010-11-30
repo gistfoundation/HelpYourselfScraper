@@ -27,7 +27,7 @@ def readRecord(id) {
 
   processContactDetails(response_page, result);
 
-  println "${result}"
+  println "\n\n${result}"
 
   result
 }
@@ -98,7 +98,7 @@ def processContactDetails(page, result) {
                          "Telephone 2:":["Telephone",""],
                          "Fax:":["Fax",""],
                          "Email:":["Email",""],
-                         "Service/Activity Details:":["ServiceDetails"],
+                         "Service/Activity Details:":["ProviderServiceDetails"],
                          " (Please click on the postcode link to view location on Multimap)":["postcode"],
                          "Further Access Details:":["DisabledAccess"]
                        ]
@@ -118,7 +118,21 @@ def processContactDetails(page, result) {
     def service_details = page.depthFirst().findAll{ it.text() ==  "Service/Activity Details" }
     // println "Found ${service_details}"
 
+    field = "none"
+
+    def service_details_config = [
+                                   "Service/Activity Details":["ProvisionPlace"],
+                                   " (Please click on the postcode link to view location on Multimap)":["ProvisionPlacePostcode"],
+                                   "Disabled Access Details:":["ProvisionPlaceDisabledAccess"],
+                                   "Days and Times:":["ProvisionDaysAndTimes"],
+                                   "Telephone 1:":["Telephone"],
+                                   "Telephone 2:":["Telephone"]
+                                 ]
+
+
     service_details.each {
+      def service_strings = []
+
       def sd_table = it.'..'.'..'.'..'.'..'.'..'
       println "\n\ntable element: ${sd_table.name()}"
       def sd_font_elements = sd_table.depthFirst().findAll { it.name() == 'FONT' }
@@ -126,15 +140,31 @@ def processContactDetails(page, result) {
       sd_font_elements.each {
         if ( ( it.B != null ) && ( it.B.text().length() > 0 ) ) {
           println "Slipping in a heading ${it.B.text()}"
-          // contact_strings.add(it.B.text())
+          service_strings.add(it.B.text())
         }
 
         def this_str = it.text()
         if ( this_str.length() > 0 ) {
-          // contact_strings.add(this_str)
-          println "Got str ${this_str}"
+          service_strings.add(this_str)
         }
       }
+
+      // println "Processing using config ${service_details_config}"
+      def service_props = [:]
+      service_strings.each { ss ->
+        // println "Testing *${ss}* ${service_details_config.contains(ss)}"
+        if ( service_details_config[ss] != null ) {
+          // println "next field : ${it} ${service_details_config[it]}"
+          field = service_details_config[ss][0];
+        }
+        else {
+          // println "set field ${field}=${ss}"
+          addProperty(service_props,field,ss)
+        }
+      }
+
+      addProperty(result,"Provision",service_props)
+      println "\n\nAdding provision ${service_props}"
     }
   }
 }
