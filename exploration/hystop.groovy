@@ -47,37 +47,11 @@ def processTopLevel() {
         requestContentType: URLENC
       ]) {  resp, parsed_page ->
 
-        // HTTP Response will be automatically parsed out... and put into parsed_page
-        // Closure called on ok request
-        // def parsed_page = new XmlParser( new org.cyberneko.html.parsers.SAXParser() ).parse(reader.text)
-        
-        // println "body ${parsed_page.BODY}"
-        // println "form ${parsed_page.BODY.FORM}"
-        // println "table[1] ${parsed_page.BODY.FORM.TABLE}"
-
-        // Now we need to parse out each row in the table..
-        def tables = parsed_page.BODY.FORM.children().findAll { x -> x.name()=='TABLE' }
-
-        println "Size of tables array: ${tables.size()}"
-
-        // println "Table[0]: ${tables[0].text()}"
-
-        def table_rows = tables[0].depthFirst().findAll { x -> x.name()=='TR' }
-
-        println "Table rows: ${table_rows.size()}"
-
-        def first = true
-        table_rows.each { row ->
-          if ( first ) {
-            // skip header
-            first = false
-          }
-          else {
-            println "Row ${row}"
-          }
+        def links = parsed_page.depthFirst().findAll{ it.name() == 'A' && it.@href.toString().startsWith("full_search_new") }
+        println "links: ${links.size()}"
+        links.each { row ->
+          println "${row.@href}"
         }
-
-        // println "Root table: ${table_rows.text()}"
       }
 
       Thread.sleep(1000)
