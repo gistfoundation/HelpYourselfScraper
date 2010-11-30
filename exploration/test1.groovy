@@ -37,7 +37,7 @@ def readRecord(id) {
  *   It's slight sophistocation is that it can dig into arbitrary elements on both sides to identify the field and the value
  */
 def extract2(page, field) {
-  println "Looking for ${field}"
+  // println "Looking for ${field}"
 
   def result = ""
   def target_rows = page.depthFirst().findAll{ it.text() =~  ".*${field}.*" }
@@ -58,7 +58,7 @@ def extract2(page, field) {
       result += "${elem.TD[1].'**'.text()}"
     }
     else {
-      println "didn't find parent"
+      // println "didn't find parent"
     }
   }
   result
@@ -78,14 +78,17 @@ def processContactDetails(page, result) {
       // def this_str = it.'**'.text()
 
       if ( ( it.B != null ) && ( it.B.text().length() > 0 ) ) {
-        println "Slipping in a heading ${it.B.text()}"
+        // println "Slipping in a heading ${it.B.text()}"
         contact_strings.add(it.B.text())
+      }
+      else if ( ( it.A != null ) && ( it.A.text().length() > 0 ) ) {
+        contact_strings.add(it.A.text())
       }
 
       def this_str = it.text()
       if ( this_str.length() > 0 ) {
         contact_strings.add(this_str)
-        println "Got str ${this_str}"
+        // println "Got str ${this_str}"
       }
     }
     
@@ -106,7 +109,7 @@ def processContactDetails(page, result) {
     def field = "none"
     contact_strings.each {
       if ( parse_config[it] != null ) {
-        println "config ${it} ${parse_config[it]}"
+        // println "config ${it} ${parse_config[it]}"
         field = parse_config[it][0];
       }
       else {
@@ -134,13 +137,16 @@ def processContactDetails(page, result) {
       def service_strings = []
 
       def sd_table = it.'..'.'..'.'..'.'..'.'..'
-      println "\n\ntable element: ${sd_table.name()}"
+      // println "\n\ntable element: ${sd_table.name()}"
       def sd_font_elements = sd_table.depthFirst().findAll { it.name() == 'FONT' }
       // Extract all the strings....
       sd_font_elements.each {
         if ( ( it.B != null ) && ( it.B.text().length() > 0 ) ) {
-          println "Slipping in a heading ${it.B.text()}"
+          // println "Slipping in a heading ${it.B.text()}"
           service_strings.add(it.B.text())
+        }
+        else if ( ( it.A != null ) && ( it.A.text().length() > 0 ) ) {
+          service_strings.add(it.A.text())
         }
 
         def this_str = it.text()
@@ -164,7 +170,7 @@ def processContactDetails(page, result) {
       }
 
       addProperty(result,"Provision",service_props)
-      println "\n\nAdding provision ${service_props}"
+      // println "\n\nAdding provision ${service_props}"
     }
   }
 }
