@@ -42,7 +42,8 @@ def processTopLevel() {
       def response = simple_search.post(
       body: [
         category: "${it.text()}",
-        contentType: groovyx.net.http.ContentType.TEXT,
+        // contentType: groovyx.net.http.ContentType.TEXT,
+        contentType: "text/html; charset=UTF8",
         requestContentType: URLENC
       ]) {  resp, parsed_page ->
 
@@ -63,10 +64,17 @@ def processTopLevel() {
 
         def table_rows = tables[0].depthFirst().findAll { x -> x.name()=='TR' }
 
-        // println "Table rows: ${table_rows.size()}"
+        println "Table rows: ${table_rows.size()}"
 
+        def first = true
         table_rows.each { row ->
-          println "Row ${row}"
+          if ( first ) {
+            // skip header
+            first = false
+          }
+          else {
+            println "Row ${row}"
+          }
         }
 
         // println "Root table: ${table_rows.text()}"
