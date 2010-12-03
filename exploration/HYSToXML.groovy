@@ -9,8 +9,8 @@ import com.thoughtworks.xstream.*
 def all_records = [:]
 def extract = new HYSExtract()
 
-extract.processTopLevel(all_records,'TEST');
-// extract.processTopLevel(all_records,'FULL');
+// extract.processTopLevel(all_records,'TEST');
+extract.processTopLevel(all_records,'FULL');
 
 output_path = "./files"
 java.io.File store_dir = new java.io.File(output_path)
@@ -57,11 +57,11 @@ def dumpMap(mapobj, writer) {
         if ( listent instanceof Map )
           dumpMap(listent,writer)
         else
-          writer.write("<entry>${listent}</entry>\n")
+          writer.write("<entry>${encode(listent)}</entry>\n")
       }
     }
     else {
-      writer.write(it.value.toString())
+      writer.write(encode(it.value))
     }
     writer.write("</${it.key}>\n")
   }
@@ -80,8 +80,8 @@ def createRDF(records, output_path) {
   writer.write("         xmlns:hys=\"http://www.sheffieldhelpyourself.org.uk/rdf-schema#\"\n")
   
   records.each {
-    writer.write("  <rdf:Description rdf:about=\"${it.value.BaseURL[0]}\">\n")
-    rdfDumpMap(it.value,writer)
+    writer.write("  <rdf:Description rdf:about=\"http://www.sheffieldhelpyourself.org.uk/items/${it.key}\">\n")
+    rdfDumpMap(it.value,writer,"http://www.sheffieldhelpyourself.org.uk/items/${it.key}")
     writer.write("  </rdf:Description>")
   }
 
@@ -91,24 +91,33 @@ def createRDF(records, output_path) {
 }
 
 
-def rdfDumpMap(mapobj, writer) {
+def rdfDumpMap(mapobj, writer, baseurl) {
   mapobj.each {
     if ( it.value instanceof Map ) {
       dumpMap(it.value)
     }
     else if ( it.value instanceof List ) {
+      def counter = 0
       it.value.each { listent ->
         if ( listent instanceof Map ) {
           // A nested object. think hard
-          dumpMap(listent,writer)
+          writer.write("<hys:${it.key}>\n");
+          writer.write("<rdf:Description rdf:about=\"${baseurl}/${it.key}/${counter++}\"/>\n")
+          rdfDumpMap(listent,writer,baseurl)
+          writer.write("</rdf:Description>\n")
+          writer.write("</hys:${it.key}>");
         }
         else {
-          writer.write("<hys:${it.key}>${listent}</hys:${it.key}>\n")
+          writer.write("<hys:${it.key}>${encode(listent)}</hys:${it.key}>\n")
         }
       }
     }
     else {
-      writer.write("<hys:${it.key}>${it.value.toString()}</hys:${it.key}>\n")
+      writer.write("<hys:${it.key}>${encode(it.value)}</hys:${it.key}>\n")
     }
   }
+}
+
+def encode (str) {
+  str.replaceAll("&","&amp;")
 }
