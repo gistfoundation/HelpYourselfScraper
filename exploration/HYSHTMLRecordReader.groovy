@@ -183,7 +183,7 @@ class HYSHTMLRecordReader {
   }
   
   def addProperty(mapobj, name, value) {
-    if ( value != null && "${value}".length() > 0 ) {
+    if ( ( value != null ) && ( "${value}".length() > 0 ) && ( name != "none" ) ) {
       def value_array = mapobj[name]
       def n_value = value;
 
