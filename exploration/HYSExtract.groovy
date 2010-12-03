@@ -66,12 +66,12 @@ class HYSExtract {
             println "${row.@href} internal id is ${internal_id}"
             def current_record = all_records[internal_id]
             if ( current_record != null ) {
-               current_record["category"].add("${it.text()}")
+               current_record["category"].add("${it.text()}".toString())
                println "Record ${internal_id} added category ${it.text()}"
             }
             else {
                current_record = reader.readRecord(internal_id)
-               current_record["category"] = ["${it.text()}"]
+               current_record["category"] = ["${it.text()}".toString()]
                all_records[internal_id]  = current_record;
                println "Created Record for ${internal_id} with category ${it.text()}"
             }

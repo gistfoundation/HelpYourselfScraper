@@ -183,12 +183,19 @@ class HYSHTMLRecordReader {
   }
   
   def addProperty(mapobj, name, value) {
-    def value_array = mapobj[name]
-    if ( value_array != null ) {
-      value_array.add(value)
-    }
-    else {
-      mapobj[name] = [value]
+    if ( value != null && "${value}".length() > 0 ) {
+      def value_array = mapobj[name]
+      def n_value = value;
+
+      if ( value instanceof org.codehaus.groovy.runtime.GStringImpl )
+        n_value = value.toString();
+
+      if ( value_array != null ) {
+        value_array.add(n_value)
+      }
+      else {
+        mapobj[name] = [n_value]
+      }
     }
   }
 }
