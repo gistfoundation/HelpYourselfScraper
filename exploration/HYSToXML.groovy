@@ -7,12 +7,19 @@
 def all_records = [:]
 def extract = new HYSExtract()
 
-extract.processTopLevel(all_records);
+extract.processTopLevel(all_records,'TEST');
+
+output_path = "./files"
+java.io.File store_dir = new java.io.File(output_path)
+store_dir.mkdirs()
 
 all_records.each {
-  createXML(it);
+  println "Processing ${it}"
+  createXML(it.value,output_path);
 }
 
-def createXML(record) {
-
+def createXML(record, output_path) {
+  println("Processing ${record.HYSID[0]}")
+  def output_file = new File("${output_path}/${record.HYSID[0]}.jser")
+  output_file << record
 }

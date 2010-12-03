@@ -19,6 +19,10 @@ class HYSExtract {
   def reader = new HYSHTMLRecordReader()
 
   def processTopLevel(all_records) {
+    processTopLevel(all_records,"full")
+  }
+
+  def processTopLevel(all_records, mode) {
     def base_url = "http://www.sheffieldhelpyourself.org.uk/"
   
     println "Loading page"
@@ -30,6 +34,11 @@ class HYSExtract {
     def select_element = response_page.depthFirst().findAll { it.name() == 'SELECT' }
   
     def options = select_element[0].depthFirst().findAll { it.name() == 'OPTION' }
+
+    //If in test mode, only do the first one
+    if ( mode == 'TEST' ) {
+      options = [options[0]];
+    }
   
     options.each {
       // println "option ${it.text()}"
@@ -55,6 +64,19 @@ class HYSExtract {
             def uri = "${row.@href}"
             def internal_id = uri.substring(uri.lastIndexOf('=')+1)
             println "${row.@href} internal id is ${internal_id}"
+            def current_record = all_records[internal_id]
+            if ( current_record != null ) {
+               current_record["category"].add("${it.text()}")
+               println "Record ${internal_id} added category ${it.text()}"
+            }
+            else {
+               current_record = reader.readRecord(internal_id)
+               current_record["category"] = ["${it.text()}"]
+               all_records[internal_id]  = current_record;
+               println "Created Record for ${internal_id} with category ${it.text()}"
+            }
+           
+            println "Now holding ${all_records.size()} records"
           }
         }
   

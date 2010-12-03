@@ -13,7 +13,7 @@ class HYSHTMLRecordReader {
   // Reads the record at http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=x
   // and returns a map of the properties for that resource.
   def readRecord(id) {
-    result = [:]
+    def result = [:]
     def base_url = "http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=${id}"
 
     addProperty(result,"BaseURL",base_url)
