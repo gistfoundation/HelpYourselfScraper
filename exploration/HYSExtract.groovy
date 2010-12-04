@@ -19,7 +19,46 @@ class HYSExtract {
   def reader = new HYSHTMLRecordReader()
 
   def processTopLevel(all_records) {
+
+    processSearchForAll(all_records,"full")
+    // This one extracts categories for records. If we already have the record, it won't be re-read.
     processTopLevel(all_records,"full")
+  }
+
+  def processSearchForAll(all_records,mode) {
+    def simple_search = new HTTPBuilder( 'http://www.sheffieldhelpyourself.org.uk/simple_search_description.asp' )
+    try {
+      def response = simple_search.post(
+      body: [
+        searchname: "%",
+        // contentType: groovyx.net.http.ContentType.TEXT,
+        contentType: "text/html; charset=UTF8",
+        requestContentType: URLENC
+      ]) {  resp, parsed_page ->
+        def links = parsed_page.depthFirst().findAll{ it.name() == 'A' && it.@href.toString().startsWith("full_search_new") }
+        println "links: ${links.size()}"
+        links.each { row ->
+          def uri = "${row.@href}"
+          def internal_id = uri.substring(uri.firstIndexOf('=')+1, uri.firstIndexOf('&'))
+          println "Processing ${internal_id}"
+          println "${row.@href} internal id is ${internal_id}"
+          def current_record = all_records[internal_id]
+          if ( current_record != null ) {
+            // Already in memory
+          }
+          else {
+            current_record = reader.readRecord(internal_id)
+            all_records[internal_id]  = current_record;
+          }
+        }
+      }
+    }
+    catch ( Exception e ) {
+        println "Problem ${e}"
+        e.printStackTrace()
+    }
+    finally {
+    }
   }
 
   def processTopLevel(all_records, mode) {
