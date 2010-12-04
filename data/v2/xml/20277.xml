@@ -1,0 +1,46 @@
+<SheffieldHYS id="20277">
+<BaseURL><entry>http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=20277</entry>
+</BaseURL>
+<HYSID><entry>20277</entry>
+</HYSID>
+<OrgName><entry>SHEFFIELD BENEFITS SERVICE</entry>
+</OrgName>
+<AltName><entry>SHEFFIELD HOUSING BENEFIT SERVICE</entry>
+</AltName>
+<Desc><entry>Determines Housing Benefit and Council Tax Benefit claims.  Appointments can be made to speak to a Benefits advisor at First Point in Howden House, local housing offices and local First Points.</entry>
+</Desc>
+<Langs><entry>Language Line</entry>
+</Langs>
+<Address><entry>PO Box 1310</entry>
+<entry>Sheffield</entry>
+<entry>South Yorkshire</entry>
+<entry>S1 1UY</entry>
+</Address>
+<Telephone><entry>0114 273 6777</entry>
+<entry>Telephone 1 Details:</entry>
+<entry>Call Centre, Mon-Fri 8.30am-5.30pm</entry>
+<entry>0114 273 6187</entry>
+<entry>Telephone 2 Details:</entry>
+<entry>Appointment line</entry>
+</Telephone>
+<Fax><entry>0114 273 6356</entry>
+</Fax>
+<Email><entry>benefits@sheffield.gov.uk</entry>
+</Email>
+<Provision><ProvisionPlace><entry>Howden House</entry>
+<entry>1 Union Street</entry>
+<entry>Sheffield</entry>
+<entry>South Yorkshire</entry>
+<entry>S1 2SH</entry>
+</ProvisionPlace>
+<ProvisionPlaceDisabledAccess><entry>Wheelchair Accessible;</entry>
+<entry>Wheelchair Accessible Toilet;</entry>
+<entry>Further Access Details:</entry>
+<entry>Lift</entry>
+</ProvisionPlaceDisabledAccess>
+<ProvisionDaysAndTimes><entry>Mon-Fri 8.30am-5.30pm (enquiries in person)</entry>
+</ProvisionDaysAndTimes>
+</Provision>
+<category><entry>BENEFITS</entry>
+</category>
+</SheffieldHYS>
