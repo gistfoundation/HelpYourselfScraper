@@ -18,6 +18,8 @@ class HYSHTMLRecordReader {
 
     addProperty(result,"BaseURL",base_url)
     addProperty(result,"HYSID",id)
+    addProperty(result,"AuthorityName","Sheffield")
+    addProperty(result,"AuthoritySNAC","00CG")
   
     def response_page = new XmlParser( new org.cyberneko.html.parsers.SAXParser() ).parse(base_url)
     // def links = myDocument.depthFirst().A['@href'].findAll{ it.endsWith(".xml") }
