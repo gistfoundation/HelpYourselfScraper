@@ -21,6 +21,7 @@ new File('./files').eachFileMatch( ~/.*\.xml/ ) {
      app.request(PUT) {request ->
         println "Sending..."
         // send("application/xml", it)
+        
         send("text/xml", it)
 
         response.'201' = { resp ->
