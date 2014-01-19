@@ -1,0 +1,16 @@
+http://www.sheffieldhelpyourself.org.uk/keyword_search.asp?keyword=AEROBICS
+
+
+Plan:
+
+Step 1:
+
+Visit http://www.sheffieldhelpyourself.org.uk/default.asp and find all URLs which are under a searchtitle paragraph entry
+
+Step 2:
+
+Visit all those URLs and find a links starting with <a href="http://www.sheffieldhelpyourself.org.uk/keyword_search.asp?keyword=ABSEILING" style="text-decoration:none">abseiling</a>
+
+Step 3:
+
+Extract the keywords
