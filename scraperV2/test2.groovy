@@ -11,6 +11,8 @@ import groovyx.net.http.*
 import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
 import java.nio.charset.Charset
+import static groovy.json.JsonOutput.*
+
 
 
 try{
@@ -19,7 +21,7 @@ try{
   is.close()
 
   m.each { key, value ->
-    println("Key: ${key}, value:${value}");
+    println prettyPrint(toJson(value))
   }
 
 }finally{}
