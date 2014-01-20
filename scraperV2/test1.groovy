@@ -19,7 +19,15 @@ def the_base_url = "http://www.sheffieldhelpyourself.org.uk/"
 // the full set of subject headings we find against each record (They aren'd displayed so we need to x-ref the urls where we find pages)
 def rec_map = [:]
 def keyword_map = [:]
+
+// This is the process-everything method
 processTopLevel(the_base_url, rec_map, keyword_map);
+
+
+// Use this approach to test individual records
+//
+// def tst = [:]
+// processRecord(tst,'25602');
 
 rec_map.each { key, value ->
   println("id: ${key}, keywords:${value.keywords}");
@@ -28,11 +36,11 @@ rec_map.each { key, value ->
 println("${rec_map.size()} Resources");
 println("${keyword_map.size()} Keywords");
 
-try{
-  def out= new ObjectOutputStream(new FileOutputStream('serializedMapsOfHYSData.obj'))
-  out.writeObject(rec_map)
-  out.close()
-}finally{}
+// try{
+//   def out= new ObjectOutputStream(new FileOutputStream('serializedMapsOfHYSData.obj'))
+//   out.writeObject(rec_map)
+//   out.close()
+// }finally{}
 
 
 
@@ -130,106 +138,146 @@ def processRecord(rec, record_id) {
     def response_page = new XmlParser( new org.cyberneko.html.parsers.SAXParser() ).parse("http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=${record_id}")
  
     def details_div = response_page.BODY.DIV.findAll { it.'@align'='left' }
+
+    // Summary
+    // The details page is split up by table rows, the details table below seems to correctly identify everything which
+    // relates to a record
     if ( details_div.size() == 1 ) {
       def details_table = details_div[0].TABLE.TBODY
-      def title_row = details_table.TR[0]
 
-      // Annoyingly, there is an optional second title row which has former titles in.
-      def description_row = details_table.TR[1]
-      def unknown_row_2 = details_table.TR[2]
-      def url_row = details_table.TR[3]
+      // details_table is split into rows, each row can contain 0,1 or more items of information which broadly fall into four classes
+      // 1) Title and Previous title - <tr><td><font><b>Title
+      // 2) Description - <tr><td><font>text,sub-html
+      // 3) Empty <tr><td> not sure if this is for visual spacing, or missing info!
+      // 4) General info <tr><td><table><tbody><tr><td> Followed by sequence of elements with property identified in <font><b>Address: style elements
 
-      rec.title = title_row.TD.FONT.B.text()
-      rec.description = description_row.TD.FONT.text()
-      rec.url = url_row.text()
-
-      details_table[0].depthFirst().IMG.findAll{ it.'@src'=='images/envelope.gif'}.each { adi ->
-        println("Got address ${adi.parent().text()}");
-        println("Process address icon...${adi.parent()}");
-        def current_property = null
-        def parent_td = adi.parent()
-        parent_td.each { ae ->
-          println("Consider ${ae}");
-          if ( ae.name() == 'IMG' ) {
-            switch ( ae.'@src' ) {
-              case 'images/envelope.gif':
-                current_property='address'
-                break;
-              case 'images/wheelchairaccesssmall.gif':
-                current_property='access'
-                break;
-              case 'images/telephone.gif':
-                current_property='telephone'
-                break;
-              case 'images/email.gif':
-                current_property='email'
-                break;
-            }
-          }
-          else if ( ae.name() == 'FONT' ) {
-            if ( ae.B.size() > 0 ) {
-              println("Got a B element -${ae.B.text()}- it names a property");
-              switch ( ae.B.text() ) {
-                case 'Address:':
-                  current_property='address'
-                  break;
-                case 'Contact Name:':
-                  current_property='contact'
-                  break;
-                case 'Days and Times:':
-                  current_property='daysAndTimes'
-                  break;
-                case 'Disabled Access Details:':
-                  current_property='access'
-                  break;
-                case 'Email:':
-                  current_property='email'
-                  break;
-                case 'Fax:':
-                  current_property='fax'
-                  break;
-                case 'Further Access Details:':
-                  current_property='access'
-                  break;
-                case 'Minicom:':
-                  current_property='minicom'
-                  break;
-                case 'Mobile:':
-                  current_property='mobile'
-                  break;
-                case 'Telephone Details:':
-                case 'Telephone 2 Details:':
-                case 'Telephone 3 Details:':
-                  current_property='telephoneDetails'
-                  break;
-                case 'Telephone:':
-                case 'Telephone 2:':
-                case 'Telephone 3:':
-                  current_property='telephone'
-                  break;
-              }
-
-            }
-            else {
-              if ( current_property != null ) {
-                if ( rec[current_property] == null ) {
-                  rec[current_property] = []
-                }
-                rec[current_property].add(ae.text());
-              }
-            }
-          }
-        }
+      details_table.TR.each { table_row ->
+        processRow(table_row, rec)
       }
-      println("Processed ${rec}");
-    }
-    else {
-      println("Found ${details_div.size()} matching elements");
+
+      println("rec: ${rec}");
     }
   }
   catch ( Exception e ) {
-    println("Problem processing record with ID ${record_id}")
     e.printStackTrace()
   }
 }
 
+def processRow(row, rec) {
+  println("Process row");
+  // Try to figure out what we have
+  if ( row.TD.FONT.B.size() == 1 ) {
+    // title or previous title
+    // println("Title or Previous title ${row.TD.FONT.B.text()}");
+    addPropValue(rec,'title',row.TD.FONT.B.text());
+  }
+  if ( row.TD.FONT.A.size() == 1 ) {
+    addPropValue(rec,'url',row.TD.FONT.A.'@href'.text());
+  }
+  if ( row.TD.FONT.STRONG.size() == 1 ) {
+    // title or previous title
+    println("Strong element ${row.TD.FONT.STRONG.text()}");
+    addPropValue(rec,row.TD.FONT.STRONG.text(),row.TD.FONT.text());
+  }
+  else if ( row.TD.FONT.size() == 1 ) {
+    // descriptive element
+    // println("description ${row.TD.FONT.text()}");
+    addPropValue(rec,'description',row.TD.FONT.text());
+  }
+  else if ( row.TD.TABLE.size() == 1 ) {
+    // Subsection
+    processSubsection(rec, row.TD.TABLE)
+  }
+  else {
+    println("unhandled: ${row}");
+  }
+}
+
+def processSubsection(rec, tab) {
+  println("\n\nProcessing subsection...");
+  def current_property = null
+  tab.TBODY.TR.TD[0]?.children().each { ae ->
+    println("  Processing td");
+
+    if ( ae.name() == 'FONT' ) {
+      if ( ae.B.size() > 0 ) {
+        println("Got a B element -${ae.B.text()}- it names a property");
+        switch ( ae.B.text() ) {
+          case 'Address:':
+            current_property='address'
+            break;
+          case 'Contact Name:':
+            current_property='contact'
+            break;
+          case 'Days and Times:':
+            current_property='daysAndTimes'
+            break;
+          case 'Disabled Access Details:':
+            current_property='access'
+            break;
+          case 'Email:':
+            current_property='email'
+            break;
+          case 'Fax:':
+            current_property='fax'
+            break;
+          case 'Further Access Details:':
+            current_property='access'
+            break;
+          case 'Minicom:':
+            current_property='minicom'
+            break;
+          case 'Mobile:':
+            current_property='mobile'
+            break;
+          case 'Telephone Details:':
+          case 'Telephone 2 Details:':
+          case 'Telephone 3 Details:':
+            current_property='telephoneDetails'
+            break;
+          case 'Telephone:':
+          case 'Telephone 2:':
+          case 'Telephone 3:':
+            current_property='telephone'
+            break;
+          case 'Service/Activity Details:':
+            println("ServiceActivityDetails......");
+            def subrec = [:]
+            if ( rec['activityDetails'] == null )
+              rec['activityDetails'] = []
+            rec['activityDetails'].add(subrec)
+            rec = subrec
+            current_property='address'
+            break;
+          default:
+            println("Unknown B element: ${ae.B.text()}");
+            break;
+        }
+      }
+      else if ( ae.A.size() == 1 ) {
+        addPropValue(rec,'postcode',ae.A.text())
+        addPropValue(rec,'maplink',ae.A.'@href'.text())
+      }
+
+      if ( ( current_property != null ) && ( ae.text().length() > 0 ) ) {
+        addPropValue(rec, current_property,ae.text());
+      }
+    }
+    else {
+      println("Unknown ${ae.name()}");
+    }
+
+  }
+}
+
+def addPropValue(rec, property, value) {
+  println("addPropValue('${property}','${value}')");
+  if ( rec[property] == null ) {
+    rec[property] = []
+  }
+
+  if ( ( value != null ) &&
+       ( value.trim().length() > 0 ) ) {
+    rec[property].add(value)
+  }
+}
