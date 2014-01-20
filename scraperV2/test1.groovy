@@ -102,14 +102,46 @@ def processKeywordSearch(heading, keyword, rec_map, keyword_map) {
       if ( rec_map[record_id] == null ) {
         rec_map[record_id] = [:]
         rec_map[record_id].id = record_id
-        rec_map[record_id].keywords = []
+        rec_map[record_id].keywords = [keyword]
+        processRecord(rec_map[record_id], record_id)
       }
-
-      rec_map[record_id].keywords.add(keyword);
+      else {
+        rec_map[record_id].keywords.add(keyword);
+      }
     }
   }
   catch ( Exception e ) {
     e.printStackTrace();
+  }
+}
+
+def processRecord(rec, record_id) {
+
+  println("Process record ${record_id}");
+
+  try {
+    def response_page = new XmlParser( new org.cyberneko.html.parsers.SAXParser() ).parse("http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=${record_id}")
+ 
+    def details_div = response_page.BODY.DIV.findAll { it.'@align'='left' }
+    if ( details_div.size() == 1 ) {
+      def details_table = details_div[0].TABLE.TBODY
+      def title_row = details_table.TR[0]
+      def description_row = details_table.TR[1]
+      def unknown_row_2 = details_table.TR[2]
+      def url_row = details_table.TR[3]
+      def address_row = details_table.TR[4]
+      rec.title = title_row.TD.FONT.B.text()
+      rec.address = address_row.text()
+      rec.url = url_row.text()
+      println("Processed ${rec.title}");
+    }
+    else {
+      println("Found ${details_div.size()} matching elements");
+    }
+  }
+  catch ( Exception e ) {
+    println("Problem processing record with ID ${record_id}")
+    e.printStackTrace()
   }
 }
 
