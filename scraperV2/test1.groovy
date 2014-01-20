@@ -28,6 +28,13 @@ rec_map.each { key, value ->
 println("${rec_map.size()} Resources");
 println("${keyword_map.size()} Keywords");
 
+try{
+  def out= new ObjectOutputStream(new FileOutputStream('serializedMapsOfHYSData.obj'))
+  out.writeObject(rec_map)
+  out.close()
+}finally{}
+
+
 
 def processTopLevel(base_url, rec_map, keyword_map) {
 
@@ -126,14 +133,95 @@ def processRecord(rec, record_id) {
     if ( details_div.size() == 1 ) {
       def details_table = details_div[0].TABLE.TBODY
       def title_row = details_table.TR[0]
+
+      // Annoyingly, there is an optional second title row which has former titles in.
       def description_row = details_table.TR[1]
       def unknown_row_2 = details_table.TR[2]
       def url_row = details_table.TR[3]
-      def address_row = details_table.TR[4]
+
       rec.title = title_row.TD.FONT.B.text()
-      rec.address = address_row.text()
+      rec.description = description_row.TD.FONT.text()
       rec.url = url_row.text()
-      println("Processed ${rec.title}");
+
+      details_table[0].depthFirst().IMG.findAll{ it.'@src'=='images/envelope.gif'}.each { adi ->
+        println("Got address ${adi.parent().text()}");
+        println("Process address icon...${adi.parent()}");
+        def current_property = null
+        def parent_td = adi.parent()
+        parent_td.each { ae ->
+          println("Consider ${ae}");
+          if ( ae.name() == 'IMG' ) {
+            switch ( ae.'@src' ) {
+              case 'images/envelope.gif':
+                current_property='address'
+                break;
+              case 'images/wheelchairaccesssmall.gif':
+                current_property='access'
+                break;
+              case 'images/telephone.gif':
+                current_property='telephone'
+                break;
+              case 'images/email.gif':
+                current_property='email'
+                break;
+            }
+          }
+          else if ( ae.name() == 'FONT' ) {
+            if ( ae.B.size() > 0 ) {
+              println("Got a B element -${ae.B.text()}- it names a property");
+              switch ( ae.B.text() ) {
+                case 'Address:':
+                  current_property='address'
+                  break;
+                case 'Contact Name:':
+                  current_property='contact'
+                  break;
+                case 'Days and Times:':
+                  current_property='daysAndTimes'
+                  break;
+                case 'Disabled Access Details:':
+                  current_property='access'
+                  break;
+                case 'Email:':
+                  current_property='email'
+                  break;
+                case 'Fax:':
+                  current_property='fax'
+                  break;
+                case 'Further Access Details:':
+                  current_property='access'
+                  break;
+                case 'Minicom:':
+                  current_property='minicom'
+                  break;
+                case 'Mobile:':
+                  current_property='mobile'
+                  break;
+                case 'Telephone Details:':
+                case 'Telephone 2 Details:':
+                case 'Telephone 3 Details:':
+                  current_property='telephoneDetails'
+                  break;
+                case 'Telephone:':
+                case 'Telephone 2:':
+                case 'Telephone 3:':
+                  current_property='telephone'
+                  break;
+              }
+
+            }
+            else {
+              if ( current_property != null ) {
+                if ( rec[current_property] == null ) {
+                  rec[current_property] = []
+                }
+                rec[current_property].add(ae.text());
+              }
+            }
+          }
+        }
+      }
+      println("Processed ${rec}");
     }
     else {
       println("Found ${details_div.size()} matching elements");
