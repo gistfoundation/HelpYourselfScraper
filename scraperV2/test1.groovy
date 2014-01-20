@@ -11,9 +11,12 @@ import groovyx.net.http.*
 import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
 import java.nio.charset.Charset
-
+import static groovy.json.JsonOutput.*
 
 def the_base_url = "http://www.sheffieldhelpyourself.org.uk/"
+
+// HYS is returning CP 1252 pages - need to fix this somehow
+// groovyx.net.http.ParserRegistry.setDefaultCharset('cp1252')
 
 // This is a bit grotty, but the DB isn't big enough to worry about, so cram it into memory whilst we reconstruct
 // the full set of subject headings we find against each record (They aren'd displayed so we need to x-ref the urls where we find pages)
@@ -28,6 +31,9 @@ processTopLevel(the_base_url, rec_map, keyword_map);
 //
 // def tst = [:]
 // processRecord(tst,'25602');
+// processRecord(tst,'24818');
+// processRecord(tst,'23947');
+// println prettyPrint(toJson(tst))
 
 rec_map.each { key, value ->
   println("id: ${key}, keywords:${value.keywords}");
@@ -36,11 +42,11 @@ rec_map.each { key, value ->
 println("${rec_map.size()} Resources");
 println("${keyword_map.size()} Keywords");
 
-// try{
-//   def out= new ObjectOutputStream(new FileOutputStream('serializedMapsOfHYSData.obj'))
-//   out.writeObject(rec_map)
-//   out.close()
-// }finally{}
+try{
+  def out= new ObjectOutputStream(new FileOutputStream('serializedMapsOfHYSData.obj'))
+  out.writeObject(rec_map)
+  out.close()
+}finally{}
 
 
 
@@ -134,8 +140,16 @@ def processRecord(rec, record_id) {
 
   println("Process record ${record_id}");
 
+
+
   try {
-    def response_page = new XmlParser( new org.cyberneko.html.parsers.SAXParser() ).parse("http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=${record_id}")
+
+    def parser = new org.cyberneko.html.parsers.SAXParser()
+    def charset = "Windows-1252"  // The encoding of the page 
+    parser.setProperty("http://cyberneko.org/html/properties/default-encoding", charset) 
+    parser.setFeature("http://cyberneko.org/html/features/scanner/ignore-specified-charset", true)    // Forces the parser to use the charset we provided to him. 
+
+    def response_page = new XmlParser( parser ).parse("http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=${record_id}")
  
     def details_div = response_page.BODY.DIV.findAll { it.'@align'='left' }
 
