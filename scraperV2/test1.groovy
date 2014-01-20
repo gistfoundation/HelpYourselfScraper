@@ -291,7 +291,16 @@ def addPropValue(rec, property, value) {
   }
 
   if ( ( value != null ) &&
-       ( value.trim().length() > 0 ) ) {
+       ( value.trim().length() > 0 ) &&
+       ( isNotStop(value) ) {
     rec[property].add(value)
   }
+}
+
+def isNotStop(v) {
+  def result=true
+  if ( v.endsWith('(View Map)') ) {
+    result = false
+  }
+  result
 }
