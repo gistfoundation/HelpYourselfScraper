@@ -125,7 +125,7 @@ def processKeywordSearch(heading, keyword, rec_map, keyword_map) {
   
         if ( rec_map[record_id] == null ) {
           rec_map[record_id] = [:]
-          rec_map[record_id].id = record_id
+          rec_map[record_id].id = 'SHYS'+record_id
           rec_map[record_id].keywords = [clean_kw]
           rec_map[record_id].categories = [clean_cat]
           processRecord(rec_map[record_id], record_id)
