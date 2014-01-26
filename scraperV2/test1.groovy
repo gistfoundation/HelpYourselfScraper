@@ -292,7 +292,7 @@ def addPropValue(rec, property, value) {
 
   if ( ( value != null ) &&
        ( value.trim().length() > 0 ) &&
-       ( isNotStop(value) ) {
+       ( isNotStop(value) ) ) {
     rec[property].add(value)
   }
 }
