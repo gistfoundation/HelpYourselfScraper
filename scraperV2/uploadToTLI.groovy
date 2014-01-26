@@ -14,6 +14,9 @@ import org.apache.http.entity.mime.*
 import org.apache.http.entity.mime.content.*
 import java.nio.charset.Charset
 import static groovy.json.JsonOutput.*
+import groovy.util.slurpersupport.GPathResult
+import org.apache.http.*
+import org.apache.http.protocol.*
 
 
 
@@ -25,6 +28,12 @@ try{
   def url = "http://localhost:8080"
 
   def api = new RESTClient(url)
+  def rest_upload_pass = ""
+  System.in.withReader {
+    print 'upload pass:'
+    rest_upload_pass = it.readLine()
+  }
+
 
   // Add preemtive auth
   api.client.addRequestInterceptor( new HttpRequestInterceptor() {
