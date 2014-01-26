@@ -114,7 +114,7 @@ def processKeywordSearch(heading, keyword, rec_map, keyword_map) {
     // http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=23453
     def records = response_page.depthFirst().A.findAll { it.'@href'?.contains('full_search_new.asp?group=') }
     def clean_kw = clean(keyword);
-    def clean_cat = clean(heading?.replaceAll('.asp',''));
+    def clean_cat = clean(heading?.replaceAll('.asp','').replaceAll('.html',''));
 
     if ( records != null ) {
       records.each { rec ->
@@ -202,9 +202,10 @@ def processRow(row, rec) {
     addPropValue(rec,'url',row.TD.FONT.A.'@href'.text());
   }
   if ( row.TD.FONT.STRONG.size() == 1 ) {
-    // title or previous title
+    // title or previous title or Charity Number
     println("Strong element ${row.TD.FONT.STRONG.text()}");
-    addPropValue(rec,row.TD.FONT.STRONG.text(),row.TD.FONT.text());
+    propname = row.TD.FONT.STRONG.text().replaceAll(':','').replaceAll(' ','')
+    addPropValue(rec,propname,row.TD.FONT.text());
   }
   else if ( row.TD.FONT.size() == 1 ) {
     // descriptive element
