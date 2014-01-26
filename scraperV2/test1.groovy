@@ -114,6 +114,7 @@ def processKeywordSearch(heading, keyword, rec_map, keyword_map) {
     // http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=23453
     def records = response_page.depthFirst().A.findAll { it.'@href'?.contains('full_search_new.asp?group=') }
     def clean_kw = clean(keyword);
+    def clean_cat = clean(heading?.replaceAll('.asp',''));
 
     if ( records != null ) {
       records.each { rec ->
@@ -126,11 +127,15 @@ def processKeywordSearch(heading, keyword, rec_map, keyword_map) {
           rec_map[record_id] = [:]
           rec_map[record_id].id = record_id
           rec_map[record_id].keywords = [clean_kw]
+          rec_map[record_id].categories = [clean_cat]
           processRecord(rec_map[record_id], record_id)
         }
         else {
           if ( !rec_map[record_id].keywords.contains(clean_kw) ) {
             rec_map[record_id].keywords.add(clean_kw);
+          }
+          if ( !rec_map[record_id].categories.contains(clean_cat) ) {
+            rec_map[record_id].categories.add(clean_cat);
           }
         }
       }
