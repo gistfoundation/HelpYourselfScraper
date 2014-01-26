@@ -53,7 +53,7 @@ try{
       uri.path='/admin/api/helpyourself/upload'
       def multipart_entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
       // multipart_entity.addPart("owner", new StringBody( 'ofsted', 'text/plain', Charset.forName('UTF-8')))
-      def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'text/xml', "${value.id}.json");
+      def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'application/json', "${value.id}.json");
       multipart_entity.addPart("tf", uploaded_file_body_part);
 
       request.entity = multipart_entity

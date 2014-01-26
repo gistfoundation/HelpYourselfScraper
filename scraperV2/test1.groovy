@@ -113,22 +113,30 @@ def processKeywordSearch(heading, keyword, rec_map, keyword_map) {
 
     // http://www.sheffieldhelpyourself.org.uk/full_search_new.asp?group=23453
     def records = response_page.depthFirst().A.findAll { it.'@href'?.contains('full_search_new.asp?group=') }
+    def clean_kw = clean(keyword);
 
-    records.each { rec ->
-      record_url = rec.'@href'
-      record_eq_pos = record_url.lastIndexOf('=')+1
-      record_id = record_url.substring(record_eq_pos,record_url.length());
-      println("Record : ${record_id} seen under heading ${heading} in keyword ${keyword}");
-
-      if ( rec_map[record_id] == null ) {
-        rec_map[record_id] = [:]
-        rec_map[record_id].id = record_id
-        rec_map[record_id].keywords = [keyword]
-        processRecord(rec_map[record_id], record_id)
+    if ( records != null ) {
+      records.each { rec ->
+        record_url = rec.'@href'
+        record_eq_pos = record_url.lastIndexOf('=')+1
+        record_id = record_url.substring(record_eq_pos,record_url.length());
+        println("Record : ${record_id} seen under heading ${heading} in keyword ${keyword}");
+  
+        if ( rec_map[record_id] == null ) {
+          rec_map[record_id] = [:]
+          rec_map[record_id].id = record_id
+          rec_map[record_id].keywords = [clean_kw]
+          processRecord(rec_map[record_id], record_id)
+        }
+        else {
+          if ( !rec_map[record_id].keywords.contains(clean_kw) ) {
+            rec_map[record_id].keywords.add(clean_kw);
+          }
+        }
       }
-      else {
-        rec_map[record_id].keywords.add(keyword);
-      }
+    }
+    else {
+      println("NO records found for ${keyword}");
     }
   }
   catch ( Exception e ) {
@@ -293,7 +301,16 @@ def addPropValue(rec, property, value) {
   if ( ( value != null ) &&
        ( value.trim().length() > 0 ) &&
        ( isNotStop(value) ) ) {
-    rec[property].add(value)
+    if ( ( property=='keywords') || ( property=='access' ) ) {
+      def clean_kw = clean(value.trim())
+      if ( !rec[property].contains(clean_kw) ) {
+        println("Adding clean ${property} ${clean_kw}");
+        rec[property].add(clean_kw);
+      }
+    }
+    else {
+      rec[property].add(value)
+    }
   }
 }
 
@@ -303,4 +320,8 @@ def isNotStop(v) {
     result = false
   }
   result
+}
+
+def clean(s) {
+  s.replaceAll('\\+',' ').replaceAll(';',' ').toLowerCase().split(' ').collect{ it.capitalize() }.join(' ').trim()
 }
