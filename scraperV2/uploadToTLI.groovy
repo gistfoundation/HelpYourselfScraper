@@ -51,7 +51,7 @@ try{
     api.request(POST) { request ->
       def record = prettyPrint(toJson(value))
       requestContentType = 'multipart/form-data'
-      uri.path="/admin/api/${coll_shortcode}/upload"
+      uri.path="/olid/api/${coll_shortcode}/upload"
       def multipart_entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
       // multipart_entity.addPart("owner", new StringBody( 'ofsted', 'text/plain', Charset.forName('UTF-8')))
       def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'application/json', "${value.id}.json");
