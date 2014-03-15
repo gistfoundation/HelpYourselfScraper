@@ -271,9 +271,9 @@ def processSubsection(rec, tab) {
           case 'Service/Activity Details:':
             println("ServiceActivityDetails......");
             def subrec = [:]
-            if ( rec['activityDetails'] == null )
-              rec['activityDetails'] = []
-            rec['activityDetails'].add(subrec)
+            if ( rec['timesAndPlaces'] == null )
+              rec['timesAndPlaces'] = []
+            rec['timesAndPlaces'].add(subrec)
             rec = subrec
             current_property='address'
             break;
