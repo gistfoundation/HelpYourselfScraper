@@ -20,13 +20,20 @@ import org.apache.http.protocol.*
 
 
 
+if ( args.length == 0 ) {
+  System.out.println("Usage: groovy ./uploadToTli.groovy <url>");
+  System.out.println("   sample URLs: http://apps.opendatasheffield.org, http://localhost:8080, ...");
+  System.exit(1)
+}
+
 try{
   def is = new ObjectInputStream(new FileInputStream('serializedMapsOfHYSData.obj'))
   def m = is.readObject()
   is.close()
 
   // def url = "http://localhost:8080"
-  def url = "http://data.opendatasheffield.org"
+  def url = args[0]
+  // def url = "http://apps.opendatasheffield.org"
   def coll_shortcode = 'sheffield_help_yourself'
 
   def api = new RESTClient(url)
@@ -52,7 +59,7 @@ try{
     api.request(POST) { request ->
       def record = prettyPrint(toJson(value))
       requestContentType = 'multipart/form-data'
-      uri.path="/admin/api/${coll_shortcode}/upload"
+      uri.path="/olid/api/${coll_shortcode}/upload"
       def multipart_entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
       // multipart_entity.addPart("owner", new StringBody( 'ofsted', 'text/plain', Charset.forName('UTF-8')))
       def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'application/json', "${value.id}.json");
